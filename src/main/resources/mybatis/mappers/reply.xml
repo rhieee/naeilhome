@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.board">
+    
+    <!-- Result Map 정의 -->
+    <resultMap id="ReplyResultMap" type="com.spring.naeilhome.board.reply.domain.ReplyDomain">
+        <result property="replyNo" column="replyNo"/>
+        <result property="boardMyhomeArticleNo" column="boardMyhomeArticleNo"/>
+        <result property="memberId" column="memberId"/>
+        <result property="memberNickname" column="memberNickname"/>
+        <result property="replyParentNo" column="replyParentNo"/>
+        <result property="replyContents" column="replyContents"/>
+        <result property="replyUpdated" column="replyUpdated"/>
+        <result property="memberNickname" column="memberNickname"/>
+        <result property="memberImage" column="memberImage"/>
+        <result property="LVL" column="LVL"/>
+    </resultMap>
+
+
+<!--     <select id="replyList" resultMap="ReplyResultMap">
+        <![CDATA[
+        SELECT LEVEL as LVL,
+            replyNo,
+            boardMyhomeArticleNo,
+            memberId,
+            replyParentNo,
+            replyContents,
+            replyUpdated
+        FROM reply
+        where boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+        START WITH  replyParentNo=0
+        CONNECT BY PRIOR replyNo = replyParentNo
+        ORDER SIBLINGS BY replyUpdated DESC
+        ]]>
+    </select> -->
+    
+<!-- 전체 게시글 조회 페이징 포함
+    <select id="replyList" resultMap="ReplyResultMap">
+    <![CDATA[
+      SELECT * FROM(SELECT ROWNUM as recNum, LVL, replyNo, boardMyhomeArticleNo, memberId, memberNickname, replyParentNo, replyContents, replyUpdated					
+                    FROM(SELECT LEVEL as LVL, replyNo, boardMyhomeArticleNo, memberId, memberNickname, replyParentNo, replyContents, replyUpdated
+                         FROM reply
+                         where boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+                         START WITH replyParentNo=0
+                         CONNECT BY PRIOR replyNo=replyParentNo
+                         ORDER SIBLINGS BY replyUpdated DESC
+                         )
+                         )  
+       WHERE recNum between (#{pageNum}-1) * 10 + 1 and #{pageNum} * 10
+    ]]>
+  </select> -->
+  
+  
+  <!-- 전체 게시글 조회 페이징 포함 -->
+<select id="replyList" resultMap="ReplyResultMap">
+    <![CDATA[
+      SELECT * FROM (
+          SELECT 
+              ROWNUM as recNum, 
+              LVL, 
+              r.replyNo, 
+              r.boardMyhomeArticleNo, 
+              r.memberId, 
+              m.memberNickname, 
+              m.memberImage,
+              r.replyParentNo, 
+              r.replyContents, 
+              r.replyUpdated
+          FROM (
+              SELECT 
+                  LEVEL as LVL, 
+                  replyNo, 
+                  boardMyhomeArticleNo, 
+                  memberId, 
+                  replyParentNo, 
+                  replyContents, 
+                  replyUpdated
+              FROM reply
+              WHERE boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+              START WITH replyParentNo = 0
+              CONNECT BY PRIOR replyNo = replyParentNo
+              ORDER SIBLINGS BY replyUpdated DESC
+          ) r
+          JOIN member m ON r.memberId = m.memberId
+      )  
+      WHERE recNum BETWEEN (#{pageNum} - 1) * 10 + 1 AND #{pageNum} * 10
+    ]]>
+</select>
+    
+   
+   <!-- 페이징을 위한 총 게시글 수 조회 -->
+   <select id="totalReplys" resultType="int" parameterType="int">
+    <![CDATA[
+      SELECT count(replyNo) from reply
+      where boardMyhomeArticleNo = #{boardMyhomeArticleNo}	
+    ]]>
+  </select>
+    
+    <!-- 글 추가 -->
+    <insert id="addReply" parameterType="replyDomain">
+ 		<![CDATA[
+			insert into reply(replyNo,
+									boardMyhomeArticleNo,
+									memberId,
+									replyContents)
+					values(REPLY_SEQ.NEXTVAL,
+						   #{boardMyhomeArticleNo}, 
+						   #{memberId}, 
+						   #{replyContents})
+ 		]]>
+	</insert>
+	
+	<insert id="addRereply" parameterType="replyDomain">
+ 		<![CDATA[
+			insert into reply(replyNo,
+							  boardMyhomeArticleNo,
+							  replyParentNo,
+							  memberId,
+							  replyContents)
+							  
+					values(REPLY_SEQ.NEXTVAL,
+						   #{boardMyhomeArticleNo}, 
+						   #{replyParentNo}, 
+						   #{memberId}, 
+						   #{replyContents})
+ 		]]>
+	</insert>
+	
+	<delete id="deleteRereply"  parameterType="int">
+   		<![CDATA[
+    		delete from reply
+      		where replyNo = #{replyNo}
+    	]]>      
+  	</delete>
+	
+	<update id="modRereply"  parameterType="replyDomain">
+		<![CDATA[
+			update reply
+			set replyContents=#{replyContents}
+			where replyNo=#{replyNo}
+		]]>
+	</update>
+</mapper>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
+<tiles-definitions>
+   <definition name="baseLayout"  template="/WEB-INF/views/common/layout.jsp">
+      <put-attribute name="title" value="" />
+      <put-attribute name="header" value="/WEB-INF/views/common/header.jsp" />
+      <put-attribute name="body" value="" />
+      <put-attribute name="footer" value="/WEB-INF/views/common/footer.jsp" />
+   </definition>
+
+
+<!-- member -->
+<!-- basket -->
+   <definition name="/basket/myBasket" extends="baseLayout">
+      <put-attribute name="title" value="나의 장바구니" />
+      <put-attribute name="body" value="/WEB-INF/views/basket/myBasket.jsp" />
+   </definition>
+   <!-- 202503?? 추가 -->
+   <definition name="/basket/deleteBasket" extends="baseLayout">
+      <put-attribute name="title" value="나의 장바구니" />
+      <put-attribute name="body" value="/WEB-INF/views/basket/myBasket.jsp" />
+   </definition>
+   <!-- 20250313 추가 -->
+   <definition name="/basket/updateBasket" extends="baseLayout">
+      <put-attribute name="title" value="나의 장바구니" />
+      <put-attribute name="body" value="/WEB-INF/views/main/main.jsp" />
+   </definition>
+   
+<!-- board/board_myhome -->
+    <definition name="/board/board_myhome/myHomeForm" extends="baseLayout">
+      <put-attribute name="title" value="글쓰기 창" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_myhome/myHomeForm.jsp" />
+   </definition>
+   
+    <definition name="/board/board_myhome/myHomeList" extends="baseLayout">
+      <put-attribute name="title" value="글 목록" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_myhome/myHomeList.jsp" />
+   </definition>
+   
+    <definition name="/board/board_myhome/myHomeSelect" extends="baseLayout">
+      <put-attribute name="title" value="글 상세" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_myhome/myHomeSelect.jsp" />
+   </definition>
+   
+    <definition name="/board/board_myhome/myHomeModForm" extends="baseLayout">
+      <put-attribute name="title" value="글 수정" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_myhome/myHomeModForm.jsp" />
+   </definition>
+   
+    <definition name="/board/board_myhome/myHomeListFragment" extends="baseLayout">
+      <put-attribute name="title" value="글 수정" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_myhome/myHomeListFragment.jsp" />
+   </definition>
+   
+<!-- board/board_notice -->
+    <definition name="/board/board_notice/noticeMain" extends="baseLayout">
+      <put-attribute name="title" value="공지사항" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_notice/noticeMain.jsp" />
+   </definition>
+   
+<!-- board/board_question -->
+    <definition name="/board/board_question/FAQList" extends="baseLayout">
+      <put-attribute name="title" value="FAQ" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_question/FAQList.jsp" />
+   </definition>
+    <definition name="/board/board_question/questionForm" extends="baseLayout">
+      <put-attribute name="title" value="문의 작성" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_question/questionForm.jsp" />
+   </definition>
+   <definition name="/board/board_question/questionSelect" extends="baseLayout">
+      <put-attribute name="title" value="문의 상세" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_question/questionSelect.jsp" />
+   </definition>
+   <definition name="/board/board_question/myQuestionList" extends="baseLayout">
+      <put-attribute name="title" value="문의 내역" />
+      <put-attribute name="body" value="/WEB-INF/views/board/board_question/myQuestionList.jsp" />
+   </definition>
+   
+<!-- cre -->
+   <definition name="/cre/creForm" extends="baseLayout">
+      <put-attribute name="title" value="취소/반품/교환" />
+      <put-attribute name="body" value="/WEB-INF/views/cre/creForm.jsp" />
+   </definition>
+   <definition name="/cre/addCre" extends="baseLayout">
+      <put-attribute name="title" value="cre 메인 페이지" />
+      <put-attribute name="body" value="/WEB-INF/views/main/main.jsp" />
+   </definition>
+
+<!-- delivery -->
+
+<!-- member -->
+   <definition name="/member/checkId" extends="baseLayout">
+      <put-attribute name="title" value="찾은 아이디 확인" />
+      <put-attribute name="body" value="/WEB-INF/views/member/checkId.jsp" />
+   </definition>
+   <definition name="/member/checkPw" extends="baseLayout">
+      <put-attribute name="title" value="찾은 비밀번호 확인" />
+      <put-attribute name="body" value="/WEB-INF/views/member/checkPw.jsp" />
+   </definition>
+   <definition name="/member/findId" extends="baseLayout">
+      <put-attribute name="title" value="아이디 찾기" />
+      <put-attribute name="body" value="/WEB-INF/views/member/findId.jsp" />
+   </definition>
+   <definition name="/member/findPw" extends="baseLayout">
+      <put-attribute name="title" value="비밀번호 찾기" />
+      <put-attribute name="body" value="/WEB-INF/views/member/findPw.jsp" />
+   </definition>
+   <definition name="/member/memberDeleteLastCh" extends="baseLayout">
+      <put-attribute name="title" value="회원 탈퇴" />
+      <put-attribute name="body" value="/WEB-INF/views/member/memberDeleteLastCh.jsp" />
+   </definition>
+   <definition name="/member/memberForm" extends="baseLayout">
+      <put-attribute name="title" value="회원 가입" />
+      <put-attribute name="body" value="/WEB-INF/views/member/memberForm.jsp" />
+   </definition>
+   <definition name="/member/memberModifyForm" extends="baseLayout">
+      <put-attribute name="title" value="설정" />
+      <put-attribute name="body" value="/WEB-INF/views/member/memberModifyForm.jsp" />
+   </definition>
+
+<!-- order -->
+    <definition name="/order/addOrder" extends="baseLayout">
+      <put-attribute name="title" value="구매페이지" />
+      <put-attribute name="body" value="/WEB-INF/views/order/addOrder.jsp" />
+   </definition>
+    <definition name="/order/kakaoPayApprove" extends="baseLayout">
+      <put-attribute name="title" value="구매페이지" />
+      <put-attribute name="body" value="/WEB-INF/views/order/kakaoPayApprove.jsp" />
+   </definition>
+	<definition name="/order/payComplete" extends="baseLayout">
+      <put-attribute name="title" value="결제완료 페이지" />
+      <put-attribute name="body" value="/WEB-INF/views/order/payComplete.jsp" />
+   </definition>
+   
+<!-- product -->
+   <definition name="/product/productList" extends="baseLayout">
+      <put-attribute name="title" value="상품 페이지" />
+      <put-attribute name="body" value="/WEB-INF/views/product/productList.jsp" />
+   </definition> 
+   <definition name="/product/selectProduct" extends="baseLayout">
+      <put-attribute name="title" value="상품 상세 정보" />
+      <put-attribute name="body" value="/WEB-INF/views/product/selectProduct.jsp" />
+   </definition>
+
+<!-- member -->
+
+
+<!-- main -->
+   <definition name="main" extends="baseLayout">
+      <put-attribute name="title" value="메인페이지" />
+      <put-attribute name="body" value="/WEB-INF/views/main.jsp" />
+   </definition>
+   
+<!-- searchResult -->
+   <definition name="searchResult" extends="baseLayout">
+      <put-attribute name="title" value="검색 결과" />
+      <put-attribute name="body" value="/WEB-INF/views/searchResult.jsp" />
+   </definition>
+   
+<!-- 리뷰작성페이지 경로 수정 -->
+   <definition name="/review/reviewForm" extends="baseLayout">
+      <put-attribute name="title" value="리뷰 작성 페이지" />
+      <put-attribute name="body" value="/WEB-INF/views/review/reviewForm.jsp" />
+   </definition>
+    
+</tiles-definitions>

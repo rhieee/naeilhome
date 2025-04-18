@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+"-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
+<tiles-definitions>
+   <definition name="myPageLayout"  template="/WEB-INF/views/common/myPageLayout.jsp">
+      <put-attribute name="title" value="" />
+      <put-attribute name="header" value="/WEB-INF/views/common/header.jsp" />
+      <put-attribute name="myPageSide" value="/WEB-INF/views/common/myPageSide.jsp" />
+      <put-attribute name="body" value="" />
+      <put-attribute name="footer" value="/WEB-INF/views/common/footer.jsp" />
+   </definition>
+
+   <!-- myPage -->
+   <definition name="/mypage/myPage" extends="myPageLayout">
+      <put-attribute name="title" value="마이프로필 메인" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/myPage.jsp" />
+   </definition>
+   <definition name="/mypage/myhome/myPageMyHomeList" extends="myPageLayout">
+      <put-attribute name="title" value="나의 게시글" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/myhome/myPageMyHomeList.jsp" />
+   </definition>
+   <definition name="/mypage/myhome/yoruPageMyHomeList" extends="myPageLayout">
+      <put-attribute name="title" value="너의 게시글" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/myhome/yoruPageMyHomeList.jsp" />
+   </definition>
+   <definition name="/mypage/bookmark/bookMarkList" extends="myPageLayout">
+      <put-attribute name="title" value="북마크" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/bookmark/bookMarkList.jsp" />
+   </definition>
+   <definition name="/mypage/like/likeList" extends="myPageLayout">
+      <put-attribute name="title" value="좋아요" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/like/likeList.jsp" />
+   </definition>
+<definition name="/mypage/delivery/deliveryList" extends="myPageLayout">
+      <put-attribute name="title" value="주문배송목록" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/delivery/deliveryList.jsp" />
+   </definition>
+   <definition name="/mypage/delivery/buyCompleteDelivery" extends="myPageLayout">
+      <put-attribute name="title" value="주문배송목록" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/delivery/deliveryList.jsp" />
+   </definition>  
+   <definition name="/mypage/wishlist/wishList" extends="myPageLayout">
+      <put-attribute name="title" value="상품 찜 목록" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/wishlist/wishList.jsp" />
+   </definition>
+   <definition name="/mypage/point/pointList" extends="myPageLayout">
+      <put-attribute name="title" value="포인트" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/point/pointList.jsp" />
+   </definition>
+	<definition name="/review/myReviewList" extends="myPageLayout">
+      <put-attribute name="title" value="나의 리뷰" />
+      <put-attribute name="body" value="/WEB-INF/views/review/myReviewList.jsp" />
+   </definition>
+   <definition name="/mypage/follow/follower" extends="myPageLayout">
+      <put-attribute name="title" value="팔로워 목록" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/follow/follower.jsp" />
+   </definition>
+   <definition name="/mypage/follow/following" extends="myPageLayout">
+      <put-attribute name="title" value="팔로잉 목록" />
+      <put-attribute name="body" value="/WEB-INF/views/mypage/follow/following.jsp" />
+   </definition>
+   
+
+</tiles-definitions>

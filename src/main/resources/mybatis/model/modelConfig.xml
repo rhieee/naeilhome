@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration 	PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+<settings>
+        <setting name="jdbcTypeForNull" value="VARCHAR"/>
+</settings>
+	<typeAliases>
+		<typeAlias type="com.spring.naeilhome.member.domain.MemberDomain"  alias="memberDomain" />
+		<typeAlias type="com.spring.naeilhome.board.board_myhome.domain.MyhomeDomain"  alias="myhomeDomain" />
+		<typeAlias type="com.spring.naeilhome.product.domain.ProductDomain"  alias="productDomain" />
+		<typeAlias type="com.spring.naeilhome.image.ImageDomain"  alias="imageDomain" />
+		<typeAlias type="com.spring.naeilhome.basket.domain.BasketDomain"  alias="basketDomain" />
+		<typeAlias type="com.spring.naeilhome.basket.vo.BasketVO"  alias="basketVO" />
+		<typeAlias type="com.spring.naeilhome.order.domain.OrderDomain"  alias="OrderDomain" />
+		<typeAlias type="com.spring.naeilhome.board.reply.domain.ReplyDomain"  alias="replyDomain" />
+		
+		<typeAlias type="com.spring.naeilhome.mypage.myhome.domain.MyPageMyhomeDomain"  alias="myPageMyhomeDomain" />
+		<typeAlias type="com.spring.naeilhome.mypage.delivery.domain.DeliveryDomain"  alias="deliveryDomain" />
+		<typeAlias type="com.spring.naeilhome.mypage.point.domain.PointDomain"  alias="pointDomain" />
+		<typeAlias type="com.spring.naeilhome.review.domain.ReviewDomain"  alias="reviewDomain" />
+		<typeAlias type="com.spring.naeilhome.board.board_question.domain.QuestionDomain"  alias="questionDomain" />
+		<typeAlias type="com.spring.naeilhome.order.domain.OrderJoinDomain" alias="OrderJoinDomain" />
+		<typeAlias type="com.spring.naeilhome.main.domain.MainDomain" alias="MainDomain" />
+		<typeAlias type="com.spring.naeilhome.cre.domain.CreDomain" alias="creDomain" />
+		<typeAlias type="com.spring.naeilhome.board.board_notice.domain.NoticeDomain" alias="noticeDomain" />
+	</typeAliases>
+</configuration>

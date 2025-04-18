@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.wishList">
+    
+    <!-- Result Map 정의 -->
+    <resultMap id="MyWishListResultMap" type="productDomain">
+        <result property="recNum" column="recNum" />
+		<result property="productNo" column="productNo" />
+		<result property="productCategory" column="productCategory" />
+		<result property="imageFileName" column="imageFileName" />
+		<result property="productName" column="productName" />
+		<result property="productDescription" column="productDescription" />
+		<result property="productPrice" column="productPrice" />
+		<result property="productQty" column="productQty" />
+		<result property="productUpdated" column="productUpdated" />
+		<result property="productOptions" column="productOptions" />
+    </resultMap>
+
+
+   <select id="allwishListCount" resultType="int" parameterType="String">
+	<![CDATA[
+		SELECT count(productName)
+        FROM wishlist
+        WHERE memberId = #{memberId}
+	]]>
+	</select>
+	
+	<!-- 상품목록 + 저장된 image파일명(1개씩만) -->
+	<select id="wishList" resultType="productDomain" parameterType="java.util.Map">
+	<![CDATA[
+		SELECT recNum, productNO, productCategory, productName, productdescription, productPrice, productQty, 
+		       productUpdated, productoptions,imageFileName
+		FROM ((SELECT ROWNUM AS recNum, i.*, p.*
+		       FROM (SELECT articleNO, imageFileName, ROW_NUMBER() OVER (PARTITION BY articleNO ORDER BY articleNO ASC) AS rn
+		             FROM image) i , (SELECT productNO, productCategory, productName, productdescription, productPrice, productQty,
+				                      productUpdated, productoptions, ROW_NUMBER() OVER (PARTITION BY productName ORDER BY productNO) AS rn
+		                              FROM product
+		                              WHERE productName IN(
+		                              SELECT productName
+            						  FROM wishlist
+           							  WHERE memberId = #{memberId}
+		                              )
+		                              ]]> 
+		                              <if test="all == all">
+			                              <if test="category != null">
+			                              	<![CDATA[WHERE productCategory = #{category}]]>
+			                              </if>
+		                              </if>
+		                              <![CDATA[ORDER BY productNO ASC) p
+		       WHERE i.articleNO = p.productNO
+		       AND i.RN = 1 AND p.RN = 1))
+		WHERE recNum between(#{section}-1)+(#{pageNum}-1)*9+1 and (#{section}-1)+#{pageNum}*9
+	]]>
+	</select>
+	
+<!-- 체크 박스 찜 제거 -->
+<delete id="deleteWishLists" parameterType="Map">
+    	DELETE FROM wishList
+    	WHERE memberId = #{memberId} AND productName IN
+    <foreach item="productName" collection="checkedVals" open="(" separator="," close=")">
+        	#{productName}
+    </foreach>
+</delete>
+
+	<!-- 찜하기 체크 -->
+     <select id="isWishList" parameterType="Map" resultType="String">
+        <![CDATA[
+            SELECT CASE 
+            WHEN EXISTS (SELECT 0 FROM wishList WHERE productName=#{productName} and memberId = #{memberId}) 
+            THEN 'wishList' 
+            ELSE 'noWishList' 
+            END
+            FROM dual
+        ]]>
+    </select>
+    
+    <!-- 찜하기 추가 -->
+    <insert id="addWishList" parameterType="Map">
+        INSERT INTO wishList (productName, memberId) 
+        VALUES (#{productName}, #{memberId})
+    </insert>
+    
+     <!-- 찜하기 삭제 -->
+    <delete id="deleteWishList" parameterType="Map">
+        DELETE FROM wishList 
+        WHERE productName = #{productName} AND memberId = #{memberId}
+    </delete>
+    
+</mapper>

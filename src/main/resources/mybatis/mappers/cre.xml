@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.cre">
+	<resultMap id="creResult" type="creDomain">
+		<result property="creNo" column="creNo" />
+		<result property="memberId" column="memberId" />
+		<result property="orderNo" column="orderNo" />
+		<result property="productNo" column="productNo" />
+		<result property="creStatement" column="creStatement" />
+		<result property="creReason" column="creReason" />
+		<result property="creStart" column="creStart" />
+		<result property="creEnd" column="creEnd" />
+		<result property="creType" column="creType" />
+	</resultMap>
+	
+	<insert id="addCre" parameterType="java.util.Map">
+		<![CDATA[
+			INSERT INTO cre (creNO, memberId, orderNo, productNo, creStatement, creReason, creType)
+			VALUES (CRE_SEQ.nextVal, #{memberId}, #{orderNo}, #{productNo}, #{creStatement}, #{creReason}, #{creType})
+		]]>
+	</insert>
+	
+	<insert id="addCreImage" parameterType="java.util.Map">
+		<![CDATA[
+			INSERT INTO image (imageNo, articleNo, imageFilename, imageType)
+			VALUES (IMAGE_SEQ.nextVal, (SELECT creNO FROM cre WHERE memberId = #{memberId} AND orderNo = #{orderNo} AND productNo = #{productNo}),
+					#{imageFilename}, 'cre')
+		]]>
+	</insert>
+	
+	<select id="creCount" resultType="int">
+		<![CDATA[
+			SELECT COUNT(*) FROM cre
+		]]>
+	</select>
+  
+  
+</mapper>
