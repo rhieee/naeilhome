@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.product">
+	<resultMap id="productResult" type="productDomain">
+		<result property="recNum" column="recNum" />
+		<result property="productNO" column="productNO" />
+		<result property="productCategory" column="productCategory" />
+		<result property="imageFileName" column="imageFileName" />
+		<result property="productName" column="productName" />
+		<result property="productDescription" column="productDescription" />
+		<result property="productPrice" column="productPrice" />
+		<result property="productQty" column="productQty" />
+		<result property="productUpdated" column="productUpdated" />
+		<result property="productOptions" column="productOptions" />
+	</resultMap>
+
+	<resultMap id="productImage" type="imageDomain">
+		<result property="imageNO" column="imageNO" />
+		<result property="articleNO" column="articleNO" />
+		<result property="imageFilename" column="imageFilename" />
+		<result property="imageUpdated" column="imageUpdated" />
+		<result property="imageType" column="imageType" />
+	</resultMap>
+
+	<select id="selectAllProductImage" resultType="imageDomain"
+	parameterType="int">
+	<![CDATA[
+		SELECT * FROM image WHERE imageType = '상품' AND articleNO = #{articleNO}
+	]]>
+	</select>
+	
+	<!-- 상품목록 + 저장된 image파일명(1개씩만) -->
+	<select id="selectAllProduct" resultType="productDomain" parameterType="java.util.Map">
+	<![CDATA[
+		SELECT recNum, productNO, productCategory, productName, productdescription, productPrice, productQty, 
+		       productUpdated, productoptions,imageFileName
+		FROM ((SELECT ROWNUM AS recNum, i.*, p.*
+		       FROM (SELECT articleNO, imageFileName, ROW_NUMBER() OVER (PARTITION BY articleNO ORDER BY articleNO ASC) AS rn
+		             FROM image) i , (SELECT productNO, productCategory, productName, productdescription, productPrice, productQty, 
+				                      productUpdated, productoptions, ROW_NUMBER() OVER (PARTITION BY productName ORDER BY productNO) AS rn
+		                              FROM product]]> 
+		                              <if test="all == all">
+			                              <if test="category != null">
+			                              	<![CDATA[WHERE productCategory = #{category}]]>
+			                              </if>
+		                              </if>
+		                              <![CDATA[ORDER BY productNO ASC) p
+		       WHERE i.articleNO = p.productNO
+		       AND i.RN = 1 AND p.RN = 1))
+		WHERE recNum between(#{section}-1)+(#{pageNum}-1)*20+1 and (#{section}-1)+#{pageNum}*20
+	]]>
+	</select>
+	
+	<select id="allProductCount" resultType="int" parameterType="java.util.Map">
+	<![CDATA[
+		SELECT count(*)
+        FROM (SELECT ROW_NUMBER() OVER (PARTITION BY productName ORDER BY productNO ASC) AS rn, productCategory
+              FROM product)
+        WHERE rn = 1
+	]]>
+		<if test="all == all">
+			<if test="category != null">
+				<![CDATA[
+					AND productCategory = #{category}
+				]]>
+			</if>
+		</if>
+	</select>
+
+	 <!-- 특정 상품정보 목록 가져오기 (상품번호,상품명,상품 사이즈,상품 색상,상품 설명,상품가격,상품수량,상품등록일) -->
+    <select id="selectProduct" resultType="productDomain"   parameterType="String">
+    <![CDATA[
+      select * from product
+      where productName = #{productName}
+    ]]>
+  	</select>
+  	
+  	<!-- 상품상세페이지 이미지파일 이름 가져오기 -->
+  	<select id="selectThumnail" resultType="imageDomain" parameterType="int">
+    <![CDATA[
+        SELECT * FROM image WHERE imageType = '상품' AND articleNO = #{productNO}  AND ROWNUM = 1
+    ]]>    
+	</select>
+	
+	<!-- 상품상세페이지 썸네일 외 이미지  (썸네일을 제외한 나머지 이미지 출력) -->
+	<select id="selectThumnailTwo" resultType="ImageDomain">
+	<![CDATA[
+    SELECT * FROM image 
+    WHERE articleNo = #{productNO} 
+      AND imageType = '상품'
+      AND imageNo NOT IN (
+          SELECT imageNo FROM image 
+          WHERE articleNo = #{productNO} 
+          AND imageType = '상품'
+          AND ROWNUM = 1
+      ) 
+    ORDER BY imageNo ASC
+    ]]>
+	</select>
+    
+  <!-- 상품검색  -->
+	 <select id="searchingProd" resultType="ProductDomain" parameterType="String">
+        SELECT 
+		    p.productNo, 
+		    p.productName, 
+		    p.productDescription, 
+		    p.productPrice,
+		    i.imageFilename
+		FROM (
+		    SELECT productNo, productName, productDescription, productPrice,
+		           ROW_NUMBER() OVER (PARTITION BY productName ORDER BY productOptions) AS rn
+		    FROM product
+		) p
+		LEFT JOIN (
+		    SELECT articleNo, MIN(imageFilename) AS imageFilename
+		    FROM image
+		    WHERE imageType = '상품'
+		    GROUP BY articleNo
+		) i ON p.productNo = i.articleNo
+		WHERE p.rn = 1
+		  AND p.productName LIKE '%' || #{keyword} || '%'
+
+	</select>
+	
+	<!-- 문의사항 상품 불러오기 -->
+    <select id="selectProductByNo" parameterType="int" resultMap="productResult">
+        <![CDATA[
+            SELECT p.productNO, 
+               p.productCategory, 
+               p.productName, 
+               p.productDescription, 
+               p.productPrice, 
+               p.productQty, 
+               p.productUpdated, 
+               p.productOptions,
+               (SELECT imageFileName 
+                  FROM image 
+                  WHERE articleNO = p.productNO 
+                    AND imageType = '상품' 
+                    AND ROWNUM = 1) AS imageFileName
+            FROM product p
+            WHERE p.productNo = #{productNO}
+        ]]>
+    </select>
+    
+    
+
+</mapper>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.member">
+	<resultMap id="memResult" type="memberDomain">
+		<result property="memberId" column="memberId" />
+		<result property="memberPw" column="memberPw" />
+		<result property="memberName" column="memberName" />
+		<result property="memberBirth1" column="memberBirth1" />
+		<result property="memberBirth2" column="memberBirth2" />
+		<result property="memberGender" column="memberGender" />
+		<result property="memberPhone1" column="memberPhone1" />
+		<result property="memberPhone2" column="memberPhone2" />
+		<result property="memberPhone3" column="memberPhone3" />
+		<result property="memberNickname" column="memberNickname" />
+		<result property="memberImage" column="memberImage" />
+		<result property="memberEmail1" column="memberEmail1" />
+		<result property="memberEmail2" column="memberEmail2" />
+		<result property="memberZip1" column="memberZip1" />
+		<result property="memberZip2" column="memberZip2" />
+		<result property="memberZip3" column="memberZip3" />
+		<result property="memberJoindate" column="memberJoindate" />
+		<result property="memberUpdated" column="memberUpdated" />
+		<result property="memberEmailReceotion"
+			column="memberEmailReceotion" />
+		<result property="memberSmsReceotion"
+			column="memberSmsReceotion" />
+		<result property="emailCount" column="emailCount" />
+	</resultMap>
+
+	<select id="loginById" resultType="memberDomain"
+		parameterType="memberDomain">
+	<![CDATA[
+		select * from MEMBER	
+		where memberId=#{memberId} and memberPw=#{memberPw}		
+	]]>
+	</select>
+
+	<!-- 아이디 체크 -->
+	<select id="idCheck" resultType="String" parameterType="String">
+	<![CDATA[
+			SELECT CASE 
+            WHEN EXISTS (SELECT 0 FROM member WHERE memberId=#{memberId}) 
+            THEN 'false' 
+            ELSE 'true' 
+            END
+            FROM dual
+	]]>
+	</select>
+
+	<!-- 회원 탈퇴 -->
+	<update id="deleteMember" parameterType="String">
+  <![CDATA[
+    BEGIN
+    
+    UPDATE boardMyhome
+    set memberId= '탈퇴회원'
+    where memberId= #{memberId};
+    
+    UPDATE reply
+    set memberId= '탈퇴회원'
+    where memberId= #{memberId};
+    
+    UPDATE boardMyHomeLikes
+    set memberId= '탈퇴회원'
+    where memberId= #{memberId};
+    
+    UPDATE review
+    set memberId= '탈퇴회원'
+    where memberId= #{memberId};
+    
+    UPDATE orders
+    set memberId= '탈퇴회원'
+    where memberId= #{memberId};
+    
+    UPDATE cre
+    set memberId= '탈퇴회원'
+    where memberId= #{memberId};
+    
+    UPDATE delivery
+    set memberId= '탈퇴회원'
+    where memberId= #{memberId};
+    
+    UPDATE boardQuestion
+    set writerId= '탈퇴회원'
+    where writerId= #{memberId};
+    
+    DELETE member
+    where memberId= #{memberId};
+    
+    DELETE follower
+    where followerId= #{memberId};
+    
+    DELETE following
+    where followerId= #{memberId};
+    
+    END;
+	]]>
+	</update>
+
+	<!-- 닉네임 체크? -->
+	<select id="nickNameCheck" parameterType="String"
+		resultType="String">
+        <![CDATA[
+            SELECT CASE 
+            WHEN EXISTS (SELECT 0 FROM member WHERE memberNickname=#{nickName}) 
+            THEN 'false' 
+            ELSE 'true' 
+            END
+            FROM dual
+        ]]>
+	</select>
+
+	<!-- memberId에 맞는 모든 회원정보 조회 -->
+	<select id="selectMemberId" resultType="memberDomain"
+		parameterType="String">
+	<![CDATA[
+	   select * from member
+	   where memberid = #{memberId}
+	]]>
+	</select>
+
+<!-- 회원 정보 수정 -->
+<update id="updateMember" parameterType="memberDomain">
+    UPDATE member
+    SET memberPhone1 = #{memberPhone1}, 
+        memberPhone2 = #{memberPhone2},
+        memberPhone3 = #{memberPhone3}, 
+        memberNickname = #{memberNickname},
+        memberEmail1 = #{memberEmail1}, 
+        memberEmail2 = #{memberEmail2},
+        memberZip1 = #{memberZip1}, 
+        memberZip2 = #{memberZip2},
+        memberZip3 = #{memberZip3}, 
+        memberUpdated = sysdate
+    <if test="memberImage != null">
+        , memberImage = #{memberImage}
+    </if>
+    <if test="memberImage == null">
+        , memberImage = NULL
+    </if>
+    WHERE memberId = #{memberId}
+</update>
+
+	<!-- 회원 가입 -->
+	<insert id="addMember" parameterType="memberDomain">
+      <![CDATA[
+        INSERT INTO member(memberId, memberPw, memberName, memberBirth1, memberBirth2, memberPhone1, memberPhone2, memberPhone3,
+                            memberNickname, memberImage, memberEmail1, memberEmail2, memberZip1, memberZip2, memberZip3, memberEmailReceotion, memberSmsReceotion)
+        VALUES(#{memberId}, #{memberPw}, #{memberName}, #{memberBirth1}, #{memberBirth2}, #{memberPhone1}, #{memberPhone2}, #{memberPhone3},
+                #{memberNickname}, #{memberImage}, #{memberEmail1}, #{memberEmail2}, #{memberZip1}, #{memberZip2}, #{memberZip3}, #{memberEmailReceotion}, #{memberSmsReceotion})
+      ]]>
+	</insert>
+
+	<!-- 비밀번호 수정 -->
+	<update id="updatePwd" parameterType="Map">
+   	<![CDATA[
+   	 update member
+   	 set memberPw = #{newPwd}
+   	 where memberid = #{memberId}
+    ]]>
+	</update>
+	
+	<!-- 아이디 찾기 -->
+	<select id="findId" resultType="String" parameterType="memberDomain">
+	<![CDATA[
+	   select memberId from member
+	   where memberName = #{memberName}
+	   and memberPhone1 = #{memberPhone1}
+	   and memberPhone2 = #{memberPhone2}
+	   and memberPhone3 = #{memberPhone3}
+	]]>
+	</select>
+	
+	<!-- 비밀번호 찾기 -->
+	<select id="findPw" resultType="String" parameterType="memberDomain">
+	<![CDATA[
+	   select memberId from member
+	   where memberName = #{memberName}
+	   and memberId = #{memberId}
+	   and memberEmail1 = #{memberEmail1}
+	   and memberEmail2 = #{memberEmail2}
+	]]>
+	</select>
+	
+	<!-- 중복이메일 찾기 -->
+	<select id="useEmail" resultType="int" parameterType="java.util.Map">
+	<![CDATA[
+	   SELECT COUNT(*) AS emailCount
+	   FROM member
+	   WHERE memberEmail1 = #{memberEmail1}
+	   AND memberEmail2 = #{memberEmail2}
+	]]>
+	</select>
+	
+	<!-- 핸드폰 중복 찾기 -->
+	<select id="phoneCheck" resultType="String" parameterType="String">
+	<![CDATA[
+	   SELECT 
+    		CASE 
+        	WHEN COUNT(*) > 0 THEN 'FALSE' 
+        	ELSE 'TRUE' 
+    		END
+		FROM member
+		WHERE memberPhone1 || memberPhone2 || memberPhone3 = #{phone}
+	]]>
+	</select>
+
+</mapper>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.like">
+    
+    <!-- Result Map 정의 -->
+    <resultMap id="MyLikeResultMap" type="com.spring.naeilhome.board.board_myhome.domain.MyhomeDomain">
+        <id property="boardMyhomeArticleNo" column="boardMyhomeArticleNo"/>
+        <result property="memberId" column="memberId"/>
+        <result property="boardMyhomeTitle" column="boardMyhomeTitle"/>
+        <result property="boardMyhomeContents" column="boardMyhomeContents"/>
+        <result property="boardMyhomeLikes" column="boardMyhomeLikes"/>
+        <result property="boardMyhomeViews" column="boardMyhomeViews"/>
+        <result property="boardMyhomeUpdated" column="boardMyhomeUpdated"/>
+        <result property="boardMyhomeHomeSize" column="boardMyhomeHomeSize"/>
+        <result property="boardMyhomeHousingType" column="boardMyhomeHousingType"/> <!-- 수정 -->
+         <result property="startRow" column="startRow"/> <!-- 페이징 추가 -->
+        <result property="endRow" column="endRow"/> <!-- 페이징 -->
+        <result property="imageFileName" column="imageFileName"/> 
+    </resultMap>
+
+	<!-- 좋아요 리스트 조회 -->
+	<select id="selectLikeList" resultMap="MyLikeResultMap" parameterType="map">
+	<![CDATA[
+	SELECT * FROM (
+    	SELECT b.*, 
+           	i.imageFilename, 
+           	m.memberNickName,
+           	ROWNUM as rnum,
+           	(
+               	SELECT COUNT(replyNo)
+               	FROM reply
+            	   WHERE boardMyhomeArticleNo = b.boardMyhomeArticleNo
+         	  ) AS totalReply
+    	FROM (
+        	SELECT * 
+        	FROM boardMyhome 
+        	WHERE boardMyhomeArticleNo IN (
+            	SELECT boardMyhomeArticleNo 
+            	FROM boardMyHomeLikes 
+            	WHERE memberId = #{memberId}
+        	)
+        	ORDER BY boardMyhomeUpdated DESC
+    	) b
+    	LEFT JOIN image i 
+        	ON b.boardMyhomeArticleNo = i.articleNo 
+        	AND i.imageType = '커버'
+    	LEFT JOIN member m 
+        	ON b.memberId = m.memberId
+    	WHERE ROWNUM <= #{endRow}  
+	) 
+	WHERE rnum >= #{startRow}
+	]]>
+	</select>
+	
+	<!-- 전체 페이지 수 -->
+	<select id="selectTotArticle" resultType="int">
+	<![CDATA[
+	select count(*) from boardMyHomeLikes where memberId= #{memberId}
+	]]>
+	</select>
+    
+    <select id="likeCount" parameterType="String" resultType="int">
+    <![CDATA[
+	select count(boardMyhomeArticleNo)
+    from boardMyHomeLikes
+    where memberId = #{memberId}
+    ]]>
+    </select>
+    
+    	<!-- 조회수 증가 (넘버 검색후 +1) -->
+    <update id="countUp"  parameterType="int">
+      <![CDATA[
+      UPDATE boardMyhome
+      SET boardMyhomeViews = boardMyhomeViews + 1
+      WHERE boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+      ]]>      
+    </update>
+    
+    <!-- 좋아요 수 증가 -->
+    <update id="upLikes">
+        UPDATE boardMyhome 
+        SET boardMyhomeLikes = boardMyhomeLikes + 1 
+        WHERE boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+    </update>
+    
+	<!-- 좋아요 여부 확인 -->
+    <select id="isLiked" resultType="int">
+        SELECT COUNT(*) 
+        FROM boardMyHomeLikes 
+        WHERE boardMyhomeArticleNo = #{boardMyhomeArticleNo} AND memberId = #{memberId}
+    </select>
+    
+    <!-- 최신 좋아요 수 조회 -->
+    <select id="likesList" resultType="int">
+        SELECT boardMyhomeLikes 
+        FROM boardMyhome
+        WHERE boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+    </select>
+    
+    <!-- 좋아요 수 감소 -->
+    <update id="downLikes">
+        UPDATE boardMyhome 
+        SET boardMyhomeLikes = boardMyhomeLikes - 1 
+        WHERE boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+    </update>
+    
+    <!-- 좋아요 삭제 -->
+    <delete id="deleteLikes">
+        DELETE FROM boardMyHomeLikes 
+        WHERE boardMyhomeArticleNo = #{boardMyhomeArticleNo} AND memberId = #{memberId}
+    </delete>
+    
+    <!-- 해당 글 좋아요 체크 -->
+     <select id="likeChcek" parameterType="Map" resultType="String">
+        <![CDATA[
+            SELECT CASE 
+            WHEN EXISTS (SELECT 0 FROM boardMyHomeLikes WHERE boardMyhomeArticleNo=#{boardMyhomeArticleNo} and memberId = #{memberId}) 
+            THEN 'like' 
+            ELSE 'noLike' 
+            END
+            FROM dual
+        ]]>
+    </select>
+    
+    	<!-- 좋아요 추가 -->
+    <insert id="addLikes">
+        INSERT INTO boardMyHomeLikes (boardMyhomeArticleNo, memberId) 
+        VALUES (#{boardMyhomeArticleNo}, #{memberId})
+    </insert>
+    
+    <!-- 해당 글 좋아요 체크 -->
+     <select id="likeTotal" parameterType="String" resultType="int">
+        <![CDATA[
+            select count(memberId)
+            from boardMyHomeLikes
+            where boardMyhomeArticleNo in (
+            	select boardMyhomeArticleNo
+            	from boardMyhome
+            	where memberId = #{memberId}
+            )
+        ]]>
+    </select>
+    
+</mapper>

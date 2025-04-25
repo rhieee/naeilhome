@@ -1,0 +1,37 @@
+{"properties": [
+  {
+    "name": "api.kakao.rest-key",
+    "type": "java.lang.String",
+    "description": "A description for 'api.kakao.rest-key'"
+  },
+  {
+    "name": "api.kakao.javascript-key",
+    "type": "java.lang.String",
+    "description": "A description for 'api.kakao.javascript-key'"
+  },
+  {
+    "name": "api.naver.client-id",
+    "type": "java.lang.String",
+    "description": "A description for 'api.naver.client-id'"
+  },
+  {
+    "name": "api.naver.client-secret",
+    "type": "java.lang.String",
+    "description": "A description for 'api.naver.client-secret'"
+  },
+  {
+    "name": "api.google.api-key",
+    "type": "java.lang.String",
+    "description": "A description for 'api.google.api-key'"
+  },
+  {
+    "name": "api.google.secret-key",
+    "type": "java.lang.String",
+    "description": "A description for 'api.google.secret-key'"
+  },
+  {
+    "name": "spring.mail.debug",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.mail.debug'"
+  }
+]}

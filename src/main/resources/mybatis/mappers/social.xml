@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.social">
+
+    <!-- 가입했나 안했나 -->
+    <select id="findSocialMemberCount" parameterType="java.util.Map" resultType="int">
+        <![CDATA[
+            SELECT COUNT(*) AS emailCount
+            FROM member
+            WHERE memberId = #{memberId}
+            AND memberEmail1 = #{email}
+        ]]>
+    </select>
+
+    <!-- 구글 정보 찾기 -->
+    <select id="findSocialMember" parameterType="java.util.Map" resultType="memberDomain">
+        <![CDATA[
+            SELECT *
+            FROM member
+            WHERE memberId = #{memberId}
+            AND memberEmail1 = #{email}
+        ]]>
+    </select>
+</mapper>

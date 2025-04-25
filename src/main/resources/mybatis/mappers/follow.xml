@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.follow">
+	<resultMap id="followResult" type="memberDomain">
+		<result property="memberId" column="memberId" />
+        <result property="memberPw" column="memberPw" />
+        <result property="memberName" column="memberName" />
+        <result property="memberBirth1" column="memberBirth1" />
+        <result property="memberBirth2" column="memberBirth2" />
+        <result property="memberGender" column="memberGender" />
+        <result property="memberPhone1" column="memberPhone1" />
+        <result property="memberPhone2" column="memberPhone2" />
+        <result property="memberPhone3" column="memberPhone3" />
+        <result property="memberNickname" column="memberNickname" />
+        <result property="memberImage" column="memberImage" />
+        <result property="memberEmail1" column="memberEmail1" />
+        <result property="memberEmail2" column="memberEmail2" />
+        <result property="memberZip1" column="memberZip1" />
+        <result property="memberZip2" column="memberZip2" />
+        <result property="memberZip3" column="memberZip3" />
+        <result property="memberJoindate" column="memberJoindate" />
+        <result property="memberUpdated" column="memberUpdated" />
+        <result property="memberEmailReceotion" column="memberEmailReceotion" />
+        <result property="memberSmsReceotion" column="memberSmsReceotion" />
+	</resultMap> 
+
+<!-- 팔로우 추가 -->
+<insert id="addFollow" parameterType="MAP">
+      <![CDATA[
+      BEGIN
+        INSERT INTO follower(memberId, followerId)
+        VALUES(#{followId}, #{memberId});
+        
+        INSERT INTO following(memberId, followerId)
+        VALUES(#{memberId}, #{followId});
+      END;
+      ]]>
+  </insert>
+
+<!-- 언팔 -->
+<delete id="deleteFollow" parameterType="MAP">
+	<![CDATA[
+      BEGIN
+        DELETE FROM follower
+        WHERE  memberId = #{followId} AND followerId = #{memberId};
+        
+        DELETE FROM following
+        WHERE  memberId = #{memberId} AND followerId = #{followId};
+      END;
+      ]]>
+</delete>
+
+<!-- 팔로워 아이디 리스트 -->  
+  <select id="followerIdList" parameterType="MAP" resultType="String">
+  <![CDATA[
+            SELECT followerId
+            from follower
+            where memberId = #{memberId}
+            order by followerUpdated DESC
+        ]]>
+  </select>
+  
+<!-- 팔로잉 아이디 리스트 -->  
+  <select id="followingIdList" parameterType="MAP" resultType="String">
+  <![CDATA[
+            SELECT followerId
+            from following
+            where memberId = #{memberId}
+            order by followerUpdated DESC
+        ]]>
+  </select>
+
+<!-- 팔로워 리스트 정보 -->  
+<select id="followerList" parameterType="MAP" resultMap="followResult">
+    SELECT m.memberId, m.memberNickName, m.memberImage
+    FROM follower f
+    JOIN member m ON f.followerId = m.memberId
+    WHERE f.memberId = #{memberId}
+    ORDER BY f.followerUpdated DESC
+</select>
+
+<!-- 팔로잉 리스트 정보 -->  
+<select id="followingList" parameterType="MAP" resultMap="followResult">
+    SELECT m.memberId, m.memberNickName, m.memberImage
+    FROM following f
+    JOIN member m ON f.followerId = m.memberId
+    WHERE f.memberId = #{memberId}
+    ORDER BY f.followerUpdated DESC
+</select>
+
+<!-- 팔로잉 여부 체크 -->
+<select id="checkFollow" parameterType="MAP" resultType="java.util.HashMap">
+    <foreach item="followerId" collection="followerIdList" separator="UNION ALL">
+        SELECT 
+            #{followerId} AS followerId,
+            CASE 
+                WHEN EXISTS (
+                    SELECT 0 
+                    FROM following 
+                    WHERE memberId = #{memberId} 
+                    AND followerId = #{followerId}
+                ) 
+                THEN 'true' 
+                ELSE 'false' 
+            END AS checkFollow
+        FROM dual
+    </foreach>
+</select>
+
+<!-- 팔로워 여부 체크 -->
+<select id="checkfollowing" parameterType="MAP" resultType="java.util.HashMap">
+    <foreach item="followerId" collection="followerIdList" separator="UNION ALL">
+        SELECT 
+            #{followerId} AS followerId,
+            CASE 
+                WHEN EXISTS (
+                    SELECT 0 
+                    FROM follower
+                    WHERE memberId = #{memberId} 
+                    AND followerId = #{followerId}
+                ) 
+                THEN 'true' 
+                ELSE 'false' 
+            END AS checkFollow
+        FROM dual
+    </foreach>
+</select>
+
+
+<!-- 게시판이나 상대방 페이지에서 팔로우 여부 체크 -->
+<select id="checkBoardFollow" parameterType="MAP" resultType="String">
+        SELECT 
+        CASE 
+        WHEN EXISTS (
+        SELECT 0
+        FROM following 
+        WHERE memberId = #{memberId} 
+        AND followerId = #{followId}
+        ) 
+        THEN 'true' 
+        ELSE 'false' 
+        END
+        FROM dual
+</select>
+
+<!-- 팔로워 수 -->  
+  <select id="followCount" parameterType="String" resultType="int">
+  <![CDATA[
+            SELECT COUNT(followerId)
+            from follower
+            where memberId = #{memberId}
+        ]]>
+  </select>
+  
+<!-- 팔로잉 수 -->  
+  <select id="followingCount" parameterType="String" resultType="int">
+  <![CDATA[
+            SELECT COUNT(followerId)
+            from following
+            where memberId = #{memberId}
+        ]]>
+  </select>
+
+  
+  
+</mapper>

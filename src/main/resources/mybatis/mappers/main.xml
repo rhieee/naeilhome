@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.main">
+	<resultMap id="mainResult" type="MainDomain">
+		<result property="productNo" column="productNo" />
+		<result property="productCategory" column="productCategory" />
+		<result property="productName" column="productName" />
+		<result property="productDescription" column="productDescription" />
+		<result property="productPrice" column="productPrice" />
+		<result property="productQty" column="productQty" />
+		<result property="productUpdated" column="productUpdated" jdbcType="TIMESTAMP"/>
+		<result property="productOptions" column="productOptions" />
+		<result property="memberNickName" column="memberNickName"/> 
+		<result property="imageFileName" column="imageFileName" />
+		
+		
+		<result property="boardMyhomeArticleNo" column="boardMyhomeArticleNo" />
+		<result property="boardMyhomeTitle" column="boardMyhomeTitle" />
+		<result property="memberId" column="memberId" />
+		<result property="boardMyhomeLikes" column="boardMyhomeLikes" />
+		<result property="boardMyhomeViews" column="boardMyhomeViews" />
+		<result property="boardMyhomeUpdated" column="boardMyhomeUpdated" jdbcType="TIMESTAMP"/>
+		<result property="totalReply" column="totalReply" />
+	</resultMap> 
+	
+	<!-- 신상품(productName이 같은 값은 1개만 출력) -->
+	<select id="selectNewProducts" resultType="MainDomain">
+	<![CDATA[
+        SELECT *
+      	FROM (
+        	SELECT productNo,
+            	productName,
+                productDescription,
+                productPrice,
+                productUpdated,
+                (SELECT imageFilename
+                	FROM image
+                	WHERE articleNo = productNo AND imageType = '상품' AND ROWNUM = 1) AS imageFileName
+                	FROM (
+              			SELECT productNo,
+                     	productName,
+                     	productDescription,
+                     	productPrice,
+                    	productUpdated,
+                     	ROW_NUMBER() OVER (PARTITION BY productName ORDER BY productUpdated DESC) AS rn
+              		FROM product
+					)
+        			WHERE rn = 1
+        ORDER BY productUpdated DESC
+      	)
+      	WHERE ROWNUM <= 5
+    ]]>
+    </select>
+    
+    <!-- 베스트 게시글 -->
+    <select id="selectBestBoardPosts" resultMap="mainResult">
+	<![CDATA[
+      SELECT *
+      FROM (
+         SELECT 
+            b.boardMyhomeArticleNo,
+            b.boardMyhomeTitle,
+            b.memberId,
+            b.boardMyhomeLikes,
+            b.boardMyhomeViews,
+            b.boardMyhomeUpdated,
+            (SELECT COUNT(*) 
+               FROM reply r 
+              WHERE r.boardMyhomeArticleNo = b.boardMyhomeArticleNo) AS totalReply,
+            (SELECT imageFilename 
+               FROM image 
+              WHERE articleNo = b.boardMyhomeArticleNo 
+                AND imageType = '커버'
+                AND ROWNUM = 1) AS imageFileName
+         FROM boardMyhome b
+         ORDER BY b.boardMyhomeLikes DESC
+      )
+      WHERE ROWNUM <= 5
+	]]>
+	</select>
+	
+	<!-- 베스트 상품(productName이 같은 값은 1개만 출력) -->
+	<select id="selectBestProducts" resultType="MainDomain">
+	<![CDATA[
+	  SELECT *
+	  FROM (
+	      SELECT *
+	      FROM (
+	          SELECT 
+	              t.productNo,
+	              t.productName,
+	              t.productDescription,
+	              t.productPrice,
+	              t.imageFileName,
+	              t.totalOrderQty,
+	              ROW_NUMBER() OVER (PARTITION BY t.productName ORDER BY t.totalOrderQty DESC) AS rn
+	          FROM (
+	              SELECT 
+	                  p.productNo,
+	                  p.productName,
+	                  p.productDescription,
+	                  p.productPrice,
+	                  (SELECT imageFilename
+	                     FROM image 
+	                    WHERE articleNo = p.productNo 
+	                      AND imageType = '상품' 
+	                      AND ROWNUM = 1) AS imageFileName,
+	                  NVL(SUM(oj.orderQty), 0) AS totalOrderQty
+	              FROM product p
+	              LEFT JOIN ordersJoin oj ON p.productNo = oj.productNo
+	              GROUP BY p.productNo, p.productName, p.productDescription, p.productPrice
+	          ) t
+	      )
+	      WHERE rn = 1
+	      ORDER BY totalOrderQty DESC
+	  )
+	  WHERE ROWNUM <= 5
+	]]>
+	</select>
+    
+    <!-- 상품 검색 (키워드 productName)-->
+	<select id="searchProducts" resultMap="mainResult">
+	<![CDATA[
+	    SELECT *
+	    FROM (
+	      SELECT 
+	         p.productNo,
+	         p.productName,
+	         p.productDescription,
+	         p.productPrice,
+	         p.productUpdated,
+	         (SELECT imageFilename
+	            FROM image
+	           WHERE articleNo = p.productNo 
+	             AND imageType = '상품'
+	             AND ROWNUM = 1) AS imageFileName,
+	         ROW_NUMBER() OVER (PARTITION BY p.productName ORDER BY p.productUpdated DESC) AS rn
+	      FROM product p
+	      WHERE UPPER(p.productName) LIKE '%' || UPPER(#{keyword}) || '%'
+	         OR UPPER(p.productDescription) LIKE '%' || UPPER(#{keyword}) || '%'
+	    )
+	    WHERE rn = 1
+	]]>
+	</select>
+	
+	<!-- 게시글 검색 (키워드 boardMyhomeTitle) -->
+	<select id="searchBoardArticles" resultMap="mainResult">
+	<![CDATA[
+	  SELECT 
+	    b.boardMyhomeArticleNo, 
+	    b.boardMyhomeTitle, 
+	    b.boardMyhomeContents   AS productDescription, 
+	    NULL                   AS productPrice, 
+	    b.boardMyhomeUpdated,
+	    (SELECT imageFilename 
+	       FROM image 
+	      WHERE articleNo   = b.boardMyhomeArticleNo 
+	        AND imageType   = '커버' 
+	        AND ROWNUM      = 1) AS imageFileName,
+	    b.memberId,
+	    m.memberNickName,
+	    b.boardMyhomeLikes, 
+	    b.boardMyhomeViews,
+	    (SELECT COUNT(*) 
+	       FROM reply 
+	      WHERE boardMyhomeArticleNo = b.boardMyhomeArticleNo) AS totalReply
+	  FROM boardMyhome b
+	  JOIN member m ON b.memberId = m.memberId
+	  WHERE UPPER(b.boardMyhomeTitle) LIKE '%' || UPPER(#{keyword}) || '%'
+	]]>
+	</select>
+	
+	<!-- 자동완성 기능 -->
+	<select id="autoCompleteSearch" resultType="string">
+	<![CDATA[
+	  SELECT suggestion FROM (
+	    SELECT DISTINCT REGEXP_REPLACE(productName, '<[^>]*>', '') AS suggestion
+	      FROM product
+	     WHERE UPPER(REGEXP_REPLACE(productName, '<[^>]*>', '')) LIKE '%' || UPPER(#{keyword}) || '%'
+	    UNION
+	    SELECT DISTINCT REGEXP_REPLACE(boardMyhomeTitle, '<[^>]*>', '') AS suggestion
+	      FROM boardMyhome
+	     WHERE UPPER(REGEXP_REPLACE(boardMyhomeTitle, '<[^>]*>', '')) LIKE '%' || UPPER(#{keyword}) || '%'
+	  )
+	  ORDER BY suggestion
+	]]>
+	</select>
+	
+</mapper>

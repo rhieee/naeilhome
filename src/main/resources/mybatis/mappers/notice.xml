@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.notice">
+	<resultMap id="noticeResult" type="noticeDomain">
+		<result property="boardNoticeArticleNo" column="boardNoticeArticleNo" />
+		<result property="boardNoticeTitle" column="boardNoticeTitle" />
+		<result property="boardNoticeContents" column="boardNoticeContents" />
+		<result property="boardNoticeImage" column="boardNoticeImage" />
+		<result property="boardNoticeViews" column="boardNoticeViews" />
+		<result property="boardNoticeUpdated" column="boardNoticeUpdated" />
+	</resultMap> 
+
+  <select id="noticeList" resultMap="noticeResult">
+	<![CDATA[
+		SELECT *
+		FROM boardNotice
+		ORDER BY boardNoticeArticleNo DESC
+	]]>
+  </select>
+  
+</mapper>

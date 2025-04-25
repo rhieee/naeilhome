@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.bookMark">
+    
+    <!-- Result Map 정의 -->
+    <resultMap id="MyBookMarkResultMap" type="com.spring.naeilhome.board.board_myhome.domain.MyhomeDomain">
+        <id property="boardMyhomeArticleNo" column="boardMyhomeArticleNo"/>
+        <result property="memberId" column="memberId"/>
+        <result property="boardMyhomeTitle" column="boardMyhomeTitle"/>
+        <result property="boardMyhomeContents" column="boardMyhomeContents"/>
+        <result property="boardMyhomeLikes" column="boardMyhomeLikes"/>
+        <result property="boardMyhomeViews" column="boardMyhomeViews"/>
+        <result property="boardMyhomeUpdated" column="boardMyhomeUpdated"/>
+        <result property="boardMyhomeHomeSize" column="boardMyhomeHomeSize"/>
+        <result property="boardMyhomeHousingType" column="boardMyhomeHousingType"/> <!-- 수정 -->
+        <result property="startRow" column="startRow"/> <!-- 페이징 추가 -->
+        <result property="endRow" column="endRow"/> <!-- 페이징 -->
+        <result property="imageFileName" column="imageFileName"/> 
+    </resultMap>
+
+<!-- 북마크 리스트 조회 -->
+<select id="selectBookMarkList" resultMap="MyBookMarkResultMap" parameterType="MAP">
+    <![CDATA[
+    SELECT * FROM (
+        SELECT b.*, 
+               i.imageFilename, 
+               m.memberNickName,
+               ROWNUM as rnum,
+               (
+                   SELECT COUNT(replyNo)
+                   FROM reply
+                   WHERE boardMyhomeArticleNo = b.boardMyhomeArticleNo
+               ) AS totalReply
+        FROM (
+            SELECT * 
+            FROM boardMyhome 
+            WHERE boardMyhomeArticleNo IN (
+                SELECT articleNo 
+                FROM bookmark 
+                WHERE memberId = #{memberId}
+            )
+            ORDER BY boardMyhomeUpdated DESC
+        ) b
+        LEFT JOIN image i 
+            ON b.boardMyhomeArticleNo = i.articleNo 
+            AND i.imageType = '커버'
+        LEFT JOIN member m 
+            ON b.memberId = m.memberId
+        WHERE ROWNUM <= #{endRow}  
+    ) 
+    WHERE rnum >= #{startRow}
+    ]]>
+</select>
+    
+<!-- 해당 아이디에 있는 북마크 수 -->
+<select id="selectTotArticle" resultType="int" parameterType="String">
+	<![CDATA[
+		select count(articleNo)
+		from bookmark
+		where memberId= #{memberId}
+	]]>
+</select>
+
+<!-- 체크 박스 북마크 제거 -->
+<delete id="deleteMyBookMarkList" parameterType="Map">
+    	DELETE FROM bookMark
+    	WHERE memberId = #{memberId} AND articleNo IN
+    <foreach item="articleNo" collection="checkedVals" open="(" separator="," close=")">
+        #{articleNo}
+    </foreach>
+</delete>
+
+<!-- 북마크 체크 -->
+     <select id="isBookmark" parameterType="Map" resultType="String">
+        <![CDATA[
+            SELECT CASE 
+            WHEN EXISTS (SELECT 0 FROM bookmark WHERE articleNo=#{boardMyhomeArticleNo} and memberId = #{memberId}) 
+            THEN 'book' 
+            ELSE 'nobook' 
+            END
+            FROM dual
+        ]]>
+    </select>
+    
+    <!-- 북마크 추가 -->
+    <insert id="addBookmark" parameterType="Map">
+        INSERT INTO bookMark (articleNo, memberId) 
+        VALUES (#{boardMyhomeArticleNo}, #{memberId})
+    </insert>
+    
+     <!-- 북마크 삭제 -->
+    <delete id="deleteBookmark" parameterType="Map">
+        DELETE FROM bookMark 
+        WHERE articleNo = #{boardMyhomeArticleNo} AND memberId = #{memberId}
+    </delete>
+    
+</mapper>

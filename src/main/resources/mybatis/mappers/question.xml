@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.question">
+	<resultMap id="questionResult" type="QuestionDomain">
+		<result property="boardQuestionArticleNo" column="boardQuestionArticleNo" />
+		<result property="productNo" column="productNo" />
+		<result property="writerId" column="writerId" />
+		<result property="boardQuestionTitle" column="boardQuestionTitle" />
+		<result property="boardQuestionContents" column="boardQuestionContents" />
+		<result property="boardQuestionImage" column="boardQuestionImage" />
+		<result property="boardQuestionUpdated" column="boardQuestionUpdated" jdbcType="TIMESTAMP"/>
+		<result property="boardQuestionStatement" column="boardQuestionStatement" />
+		<result property="boardQuestionParentNO" column="boardQuestionParentNO" />
+		<result property="boardQuestionType1" column="boardQuestionType1" />
+		<result property="boardQuestionType2" column="boardQuestionType2" />		
+	</resultMap> 
+	
+	<insert id="insertQuestion" parameterType="QuestionDomain">
+        <![CDATA[
+        INSERT INTO boardQuestion
+                    (boardQuestionArticleNo, 
+                    productNo, 
+                    writerId, 
+                    boardQuestionContents, 
+                    boardQuestionImage, 
+                    boardQuestionStatement, 
+                    boardQuestionParentNO, 
+                    boardQuestionType1, 
+                    boardQuestionType2)
+        VALUES (QUESTION_SEQ.NEXTVAL, 
+                #{productNo}, 
+                #{writerId}, 
+                #{boardQuestionContents}, 
+                #{boardQuestionImage}, 
+                '처리중', 
+                #{boardQuestionParentNO}, 
+                #{boardQuestionType1}, 
+                #{boardQuestionType2})
+        ]]>
+    </insert>
+    
+    <!-- 전체 문의사항 목록 조회 -->
+    <select id="selectAllQuestions" resultMap="questionResult" parameterType="map">
+	    <![CDATA[
+	        SELECT boardQuestionArticleNo,
+	               boardQuestionType1,
+	               boardQuestionType2,
+	               boardQuestionContents,
+	               boardQuestionUpdated,
+	               boardQuestionStatement
+	        FROM boardQuestion
+	        ORDER BY boardQuestionUpdated DESC
+	    ]]>
+	</select>
+	
+	<!-- 문의 상세 페이지 -->
+	<select id="selectQuestionByNo" parameterType="int" resultMap="questionResult">
+	    <![CDATA[
+	        SELECT * 
+	        FROM boardQuestion 
+	        WHERE boardQuestionArticleNo = #{boardQuestionArticleNo}
+	    ]]>
+	</select>
+	
+	<!-- 로그인 유저의 문의내역만 조회 -->
+	<select id="selectQuestionsByWriterId" resultMap="questionResult" parameterType="string">
+	  <![CDATA[
+	    SELECT boardQuestionArticleNo,
+	           boardQuestionType1,
+	           boardQuestionType2,
+	           boardQuestionContents,
+	           boardQuestionUpdated,
+	           boardQuestionStatement
+	    FROM boardQuestion
+	    WHERE writerId = #{writerId}
+	    ORDER BY boardQuestionUpdated DESC
+	  ]]>
+	</select>
+	
+</mapper>

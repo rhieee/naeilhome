@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.review">
+    
+    <!-- Result Map 정의 -->
+    <resultMap id="ReviewResultMap" type="ReviewDomain">
+        <result property="reviewNo" column="reviewNo"/>
+        <result property="orderNo" column="orderNo"/>
+        <result property="memberId" column="memberId"/>
+        <result property="productNo" column="productNo"/>
+        <result property="productName" column="productName"/>
+        
+        <result property="reviewContents" column="reviewContents"/>
+        <result property="reviewUpdated" column="reviewUpdated"/>
+        <result property="reviewStarAvg" column="reviewStarAvg"/>
+        <result property="reviewStarDurability" column="reviewStarDurability"/>
+        <result property="reviewStarPrice" column="reviewStarPrice"/>
+        <result property="reviewStarDesign" column="reviewStarDesign"/>
+        <result property="reviewStarDelivery" column="reviewStarDelivery"/>
+    </resultMap>
+    
+    <!-- 나의 리뷰글 조회 -->
+    <select id="selectReviewList" parameterType="String" resultMap="ReviewResultMap">
+    select r.reviewNo, r.memberId, r.productNo, p.productName, r.reviewContents, 
+           r.reviewUpdated, r.reviewStarAvg, r.reviewStarDurability, r.reviewStarPrice, 
+           r.reviewStarDesign, r.reviewStarDelivery
+    from review r
+    join product p on r.productNo = p.productNo
+    where r.memberId = #{memberId}
+	</select>
+	
+    <!-- 상품 이름만 조회 -->
+    <select id="selectProductName" parameterType="int" resultType="string">
+    select productName from product where productNo = #{productNo}
+	</select>
+    
+	<!-- 리뷰 저장(이미지X) -->
+	 <insert id="addReview" parameterType="reviewDomain">
+		 insert into review(reviewNo, memberId, orderNo, productNo, reviewContents, reviewUpdated,
+		 				  reviewStarAvg, reviewStarDurability, reviewStarPrice, reviewStarDesign, reviewStarDelivery, productName)
+		 values(review_seq.NEXTVAL, #{memberId}, #{orderNo}, #{productNo}, #{reviewContents}, SYSDATE,
+		 #{reviewStarAvg}, #{reviewStarDurability}, #{reviewStarPrice}, #{reviewStarDesign}, #{reviewStarDelivery},
+		 (SELECT productName FROM product WHERE productNo = #{productNo})
+		 )
+	 </insert>
+	
+	<!-- 리뷰에 저장된 reviewNo을 받아옴 -->
+    <select id="selectCurrVal" resultType="int">
+    SELECT review_seq.currval FROM dual
+	</select>
+    
+    <!-- 리뷰 이미지 저장 -->
+    <insert id="addImage" parameterType="map">
+    insert into image (imageNo, articleNo, imageFilename, imageUpdated, imageType)
+    values (image_seq.NEXTVAL, #{articleNo}, #{imageFilename}, sysdate, #{imageType})
+	</insert>
+	
+	<!-- 상세페이지에서 상품에 대한 모든 리뷰 조회 -->
+    <select id="reviewsList" resultType="reviewDomain" parameterType="String">
+    select * 
+    from review
+    where productName = #{productName}
+    order by reviewUpdated DESC
+    </select>
+   
+</mapper>

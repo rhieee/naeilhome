@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.board">
+    
+    <!-- Result Map 정의 -->
+    <resultMap id="MyhomeResultMap" type="com.spring.naeilhome.board.board_myhome.domain.MyhomeDomain">
+        <id property="boardMyhomeArticleNo" column="boardMyhomeArticleNo"/>
+        <result property="memberId" column="memberId"/>
+        <result property="boardMyhomeTitle" column="boardMyhomeTitle"/>
+        <result property="boardMyhomeContents" column="boardMyhomeContents"/>
+        <result property="boardMyhomeLikes" column="boardMyhomeLikes"/>
+        <result property="boardMyhomeViews" column="boardMyhomeViews"/>
+        <result property="boardMyhomeUpdated" column="boardMyhomeUpdated"/>
+        <result property="boardMyhomeHomeSize" column="boardMyhomeHomeSize"/>
+        <result property="boardMyhomeHousingType" column="boardMyhomeHousingType"/> 
+        <result property="imageFileName" column="imageFileName"/> 
+        <result property="memberNickName" column="memberNickName"/> 
+        <result property="memberImage" column="memberImage"/> 
+    </resultMap>
+    
+    <resultMap id="ImageResultMap" type="com.spring.naeilhome.image.ImageDomain">
+		<result property="imageNO" column="imageNO" />
+		<result property="articleNO" column="articleNO" />
+		<result property="imageFilename" column="imageFilename" />
+		<result property="imageUpdated" column="imageUpdated" />
+		<result property="imageType" column="imageType" />
+	</resultMap>
+
+	<!-- 전체 게시글 조회 -->
+	<select id="selectAllArticlesList" resultMap="MyhomeResultMap">
+        <![CDATA[
+		SELECT *
+		FROM (
+		    SELECT 
+		        b.boardMyhomeArticleNo,
+		        b.memberId,  
+		        b.boardMyhomeTitle,
+		        b.boardMyhomeContents,
+		        b.boardMyhomeUpdated,
+		        b.boardMyhomeLikes,
+		        b.boardMyhomeViews,
+		        i.imageFileName,
+		        m.memberNickName,
+		        ROW_NUMBER() OVER (ORDER BY b.boardMyhomeUpdated DESC) AS recNum
+		    FROM boardMyhome b
+		    JOIN image i 
+		        ON b.boardMyhomeArticleNo = i.articleNo
+		    JOIN member m
+		        ON b.memberId = m.memberId
+		    WHERE i.imageType = '커버'
+		)
+		WHERE recNum BETWEEN #{startPage} AND #{endPage}
+
+        ]]>
+	</select>
+	
+<select id="selectFilterArticlesList" resultMap="MyhomeResultMap">
+  <![CDATA[
+    SELECT *
+    FROM (
+      SELECT 
+        b.boardMyhomeArticleNo,
+        b.memberId,
+        m.memberNickName,
+        b.boardMyhomeTitle,
+        b.boardMyhomeContents,
+        b.boardMyhomeLikes,
+        b.boardMyhomeViews,
+        b.boardMyhomeUpdated,
+        b.boardMyhomeHomeSize,
+        b.boardMyhomeHousingType,
+        i.imagefilename,
+        ROW_NUMBER() OVER (
+  ]]>
+      <if test="sortType == '인기순'">
+        <![CDATA[ ORDER BY b.boardMyhomeLikes DESC ]]>
+      </if>
+      <if test="sortType == '과거순'">
+        <![CDATA[ ORDER BY b.boardMyhomeUpdated ASC ]]>
+      </if>
+      <if test="sortType == null or sortType == '' or sortType == '최신순'">
+        <![CDATA[ ORDER BY b.boardMyhomeUpdated DESC ]]>
+      </if>
+  <![CDATA[
+      ) AS recNum
+      FROM member m, boardMyhome b
+      JOIN image i ON b.boardMyhomeArticleNo = i.articleNo
+      WHERE i.imagetype = '커버'
+      AND b.memberId = m.memberId
+  ]]>
+      <if test="boardMyhomeHousingType != null and boardMyhomeHousingType != ''">
+        AND b.boardMyhomeHousingType = #{boardMyhomeHousingType}
+      </if>
+      <if test="boardMyhomeHomeSize != null and boardMyhomeHomeSize != ''">
+        AND b.boardMyhomeHomeSize = #{boardMyhomeHomeSize}
+      </if>
+  <![CDATA[
+    ) filtered
+    ORDER BY recNum
+  ]]>
+</select>
+
+    
+	<select id="selectMyHome" resultType="myhomeDomain" parameterType="int">
+   		 <![CDATA[
+   		   SELECT b.*, 
+           i.imagefilename, 
+           m.memberNickName, 
+           m.memberImage
+   		   FROM boardMyhome b
+    	   JOIN image i ON b.boardmyhomearticleno = i.articleno
+    	   JOIN member m ON b.memberId = m.memberId
+    	   WHERE i.imagetype = '커버' 
+      	   AND b.boardmyhomearticleno = #{boardMyhomeArticleNo}
+    ]]>
+</select>
+
+		<!-- 전체 게시글 수 조회 -->
+	<select id="totalAtricles" resultType="int">
+        <![CDATA[
+            SELECT count(boardMyhomeArticleNo)
+            FROM boardMyHome
+        ]]>
+	</select>
+  	
+  	<!-- 새 글 번호 가져오기 -->
+  	 <select id="selectNewMyHomeNO" resultType="int"  >
+		<![CDATA[
+			SELECT  nvl(max(boardMyhomeArticleNo), 0) + 1 from boardMyhome		
+		]]>
+	</select>
+	
+	 <!-- 커버이미지 파일이름 가져오기 -->
+  	 <select id="getCoverImageName" resultType="String"  >
+		<![CDATA[
+			select imagefilename
+            from image
+            where imagetype = '커버' and articleNo = #{articleNo}
+		]]>
+	</select>
+	
+	<!-- 이미지 아티클넘버 조회용 -->
+	<select id="coverImageArticleNo" resultType="int"  >
+		<![CDATA[
+			SELECT count(#{articleNo}) 
+			FROM image 
+			WHERE articleNo = #{articleNo} and imagetype = '커버'
+		]]>
+	</select>
+	
+    
+    <!-- 닉네임 조회 -->
+    <select id="checkNickName" parameterType="String" resultType="String" >
+        <![CDATA[
+            SELECT memberNickName
+            FROM member 
+            WHERE memberId = #{memberId}
+        ]]>
+    </select>
+    
+        <!-- 각 댓글수 -->
+	<select id="totalReply" resultMap="MyhomeResultMap">
+	<![CDATA[
+	SELECT b.boardMyhomeArticleNo, COUNT(r.replyNo) AS totalReply
+	FROM boardMyhome b
+	LEFT OUTER JOIN reply r ON b.boardMyhomeArticleNo = r.boardMyhomeArticleNo
+	GROUP BY b.boardMyhomeArticleNo
+	]]>
+	</select>
+    
+   <!-- 글 추가 -->
+	<insert id="addArticleMyHome" parameterType="MyhomeDomain">
+ 		<![CDATA[
+			insert into boardMyhome(boardMyhomeArticleNo,
+									memberId,
+									boardMyhomeTitle,
+									boardMyhomeContents,
+									boardMyhomeHousingType,
+									boardMyhomeHomeSize)
+					values(#{boardMyhomeArticleNo},
+						   #{memberId}, 
+						   #{boardMyhomeTitle}, 
+						   #{boardMyhomeContents},
+						   #{boardMyhomeHousingType},
+						   #{boardMyhomeHomeSize})
+ 		]]>
+	</insert>
+	
+	<!-- 커버이미지 경로 저장 -->
+    <insert id="coverImagePath" parameterType="map">
+	    <![CDATA[
+	        INSERT INTO image (imageNo, articleNo, imageFilename, imageUpdated, imageType)
+	        			VALUES (image_seq.NEXTVAL, #{articleNo}, #{imageFilename}, SYSDATE, '커버')
+	    ]]>
+	</insert>
+	
+	<!-- 게시글 삭제 -->
+	<delete id="deleteMyHome"  parameterType="int">
+   		<![CDATA[
+    		delete from boardMyhome
+      		where boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+    	]]>      
+  	</delete>
+	
+	<!-- 게시글 수정 -->
+	<update id="updateArticle"  parameterType="java.util.Map">
+		<![CDATA[
+			update boardMyhome
+			set boardMyhomeTitle=#{boardMyhomeTitle},	 
+			boardMyhomeContents=#{boardMyhomeContents},
+			boardMyhomeHousingType=#{boardMyhomeHousingType},
+			boardMyhomeHomeSize=#{boardMyhomeHomeSize}
+			where boardMyhomeArticleNo=#{boardMyhomeArticleNo}
+		]]>
+	</update>
+	
+	<!-- 커버이미지 경로 업데이트(같은 아티클 넘버가 존재할 때) -->
+	<update id="coverImageSamePath"  parameterType="map">
+		<![CDATA[
+			UPDATE image 
+			SET imageFilename = #{imageFilename} 
+			WHERE articleNo = #{articleNo} and imagetype = '커버'
+		]]>
+	</update>
+	
+	 <!-- 상품검색 추가 -->
+    <insert id="addMyhomeProd" parameterType="map">
+ 		INSERT ALL
+	    <foreach collection="productName" item="pName">
+	        INTO boardMyhomeProduct (boardMyhomeArticleNO, productName)
+	        VALUES (#{boardMyhomeArticleNO}, #{pName})
+	    </foreach>
+	    SELECT * FROM dual
+    </insert>
+
+
+	<!-- 상품검색 가져오기 -->
+	<select id="getProdName" parameterType="int" resultType="MyhomeDomain">
+	    <![CDATA[
+	        SELECT 
+	            t.productName,
+	            t.productNO,
+	            (
+	                SELECT i.imageFileName
+	                FROM image i
+	                WHERE i.articleNO = t.productNO
+	                  AND i.imageType = '상품'
+	                  AND ROWNUM = 1
+	            ) AS prodImageName
+	        FROM (
+	            SELECT 
+	                b.productName, 
+	                MIN(p.productNO) AS productNO
+	            FROM boardMyhomeProduct b
+	            JOIN product p ON b.productName = p.productName
+	            WHERE b.boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+	            GROUP BY b.productName
+	        ) t
+	    ]]>
+	</select>
+	
+	<!-- 상품검색 삭제 -->
+	<delete id="deleteMyhomeProd"  parameterType="int">
+   		<![CDATA[
+    		delete from boardMyhomeProduct
+      		where boardMyhomeArticleNo = #{boardMyhomeArticleNo}
+    	]]>      
+  	</delete>
+    
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.basket">
+	<resultMap id="basketResult" type="basketDomain">
+		<result property="memberId" column="memberId" />
+		<result property="productNo" column="productNO" />
+		<result property="basketProductQty" column="basketProductQty" />
+		<result property="basketUpdated" column="basketUpdated" />
+		<result property="basketProductOptions" column="basketProductOptions" />
+		
+		<result property="imageFileName" column="imageFileName" />
+		<result property="productName" column="productName" />
+		<result property="productPrice" column="productPrice" />
+		<result property="productQty" column="productQty" />
+		
+		<result property="memberId" column="memberId" />
+	</resultMap> 
+	
+	<resultMap id="voResult" type="basketVO">
+		<result property="memberId" column="memberId" />
+		<result property="productNo" column="productNO" />
+		<result property="productQty" column="productQty" />
+		<result property="productPrice" column="productPrice" />
+	</resultMap> 
+
+  <select id="myBasketList"  resultType="basketDomain" parameterType="String" >
+	<![CDATA[
+		SELECT  b.*, p.*, i.articleNO, i.imageFilename
+		FROM product p, (SELECT imageFilename, articleNo
+                    		FROM (SELECT imageNo, articleNo, imageFilename, imageType,
+                            		ROW_NUMBER() OVER (PARTITION BY articleNo ORDER BY imageNo ASC) AS rn
+                            		FROM image)
+                    		WHERE rn = 1) i, basket b
+		WHERE p.productNo = i.articleNo
+        AND b.memberId = #{memberId}
+        AND b.productNO = p.productNO
+		ORDER BY b.basketupdated ASC
+	]]>
+  </select>
+  
+  <delete id="deleteMyBasket" parameterType="java.util.Map" >
+	<![CDATA[
+		DELETE FROM basket
+		WHERE memberId = #{memberId}
+		AND productNO = #{productNO}
+	]]>
+  </delete>
+  
+  <insert id="addBasket" parameterType="basketDomain">
+    <![CDATA[
+        INSERT INTO basket (memberId, productNo, basketProductQty, basketProductOptions, basketUpdated)
+        VALUES (#{memberId}, #{productNO}, #{basketProductQty}, 
+        (SELECT productOptions FROM product WHERE productNO = #{productNO})
+        , sysdate)
+    ]]>
+  </insert>
+  
+  <update id="updateBasket" parameterType="basketDomain">
+  	<![CDATA[
+  		UPDATE basket
+  		SET basketProductQty = #{basketProductQty}
+  		WHERE memberId = #{memberId}
+  		AND productNO = #{productNO}
+  	]]>
+  </update>
+  
+  <update id="finalUpdateBasket" parameterType="basketVO">
+  	<![CDATA[
+  		UPDATE basket
+  		SET basketProductQty = #{productQty}
+  		WHERE memberId = #{memberId}
+  		AND productNO = #{productNO}
+	]]>
+  </update>
+  
+  
+  
+</mapper>

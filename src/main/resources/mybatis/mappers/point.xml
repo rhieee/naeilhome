@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.point">
+	<resultMap id="pointResult" type="PointDomain">
+		<result property="memberId" column="memberId" />
+		<result property="pointEarned" column="pointEarned" />
+		<result property="pointDeduct" column="pointDeduct" />
+		<result property="pointRemain" column="pointRemain" />
+		
+		<result property="joinNo" column="joinNo" />
+        <result property="orderJoinDate" column="orderJoinDate" />
+        <result property="productName" column="productName" />
+        <result property="productPoint" column="productPoint" />
+        
+        <result property="orderDate" column="orderDate" />
+        
+        <result property="reviewUpdated" column="reviewUpdated" />
+        <result property="reviewContents" column="reviewContents" />
+        
+        <result property="memberJoindate" column="memberJoindate" />
+	</resultMap>
+	
+	<!-- 사용 가능한 포인트 -->
+	<select id="selectPointByMemberId" resultMap="pointResult">
+		<![CDATA[
+		    SELECT memberId, pointEarned, pointDeduct, pointRemain
+		    FROM point
+		    WHERE memberId = #{memberId}
+	    ]]>
+	</select>
+	
+	<!-- 구매확정 + -->
+    <select id="selectPointPlusHistory" resultMap="pointResult" parameterType="String">
+        <![CDATA[
+	        SELECT 
+	            o.joinNo,
+	            oj.orderJoinDate,
+	            p.productName,
+	            ROUND(oj.orderAmount * 0.01) AS productPoint
+	        FROM orders o
+	        JOIN ordersJoin oj ON o.joinNo = oj.joinNo
+	        JOIN product p ON oj.productNo = p.productNo
+	        WHERE o.memberId = #{memberId}
+	          AND oj.orderStatement = '구매확정'
+	        ORDER BY oj.orderJoinDate DESC
+	    ]]>
+    </select>
+    
+    <!-- 포인트 - -->
+    <select id="selectPointMinusHistory" resultMap="pointResult" parameterType="String">
+    	<![CDATA[
+    		SELECT 
+	            o.joinNo,
+	            o.orderDate,
+	            p.productName,
+	            oj.orderPoints AS productPoint
+	        FROM orders o
+	        JOIN ordersJoin oj ON o.joinNo = oj.joinNo
+	        JOIN product p ON oj.productNo = p.productNo
+	        WHERE o.memberId = #{memberId}
+	          AND oj.orderPoints != 0
+	        ORDER BY oj.orderJoinDate DESC
+    	]]>
+    </select>
+    
+    <!-- 리뷰작성시 +150P -->
+    <select id="selectPointReview" resultMap="pointResult">
+		<![CDATA[
+	        SELECT reviewUpdated,
+	               CASE 
+	                 WHEN LENGTH(reviewContents) > 20 
+	                 THEN SUBSTR(reviewContents, 1, 20) || '...'
+	                 ELSE reviewContents
+	               END AS reviewContents
+	        FROM review
+	        WHERE memberId = #{memberId}
+	    ]]>
+	</select>
+	
+	<!-- 회원가입 +1000P -->
+	<select id="newMembergood" resultMap="pointResult">
+		<![CDATA[
+			SELECT memberJoindate
+			FROM member
+			WHERE memberId = #{memberId}
+		]]>
+	</select>
+  
+</mapper>
